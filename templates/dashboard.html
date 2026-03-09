@@ -1,0 +1,28 @@
+<h2>Cooperative Dashboard</h2>
+
+<p>Total Crops Received: {{ total }}</p>
+
+<a href="/upload">Upload Harvest</a>
+<a href="/logout">Logout</a>
+
+<table border="1">
+
+<tr>
+<th>Crop</th>
+<th>Quantity</th>
+<th>Farmer</th>
+<th>Date</th>
+</tr>
+
+{% for row in inventory %}
+
+<tr>
+<td>{{row["crop_name"]}}</td>
+<td>{{row["quantity"]}}</td>
+<td>{{row["farmer"]}}</td>
+<td>{{row["date_received"]}}</td>
+</tr>
+
+{% endfor %}
+
+</table>
