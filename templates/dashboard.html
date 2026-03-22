@@ -1,28 +1,48 @@
-<h2>Cooperative Dashboard</h2>
-
-<p>Total Crops Received: {{ total }}</p>
-
-<a href="/upload">Upload Harvest</a>
-<a href="/logout">Logout</a>
-
-<table border="1">
-
-<tr>
-<th>Crop</th>
-<th>Quantity</th>
-<th>Farmer</th>
-<th>Date</th>
-</tr>
-
-{% for row in inventory %}
-
-<tr>
-<td>{{row["crop_name"]}}</td>
-<td>{{row["quantity"]}}</td>
-<td>{{row["farmer"]}}</td>
-<td>{{row["date_received"]}}</td>
-</tr>
-
-{% endfor %}
-
-</table>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agri-Direct Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center">Cooperative Dashboard</h2>
+        <p class="text-center">Total Crops Received: {{ total }}</p>
+        <div class="d-flex justify-content-center mb-4">
+            <a href="/upload" class="btn btn-primary me-2">Upload Harvest</a>
+            <a href="/logout" class="btn btn-secondary">Logout</a>
+        </div>
+        <h3>Inventory</h3>
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Crop</th>
+                    <th>Quantity</th>
+                    <th>Farmer</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in inventory %}
+                <tr>
+                    <td>{{ row["crop_name"] }}</td>
+                    <td>{{ row["quantity"] }}</td>
+                    <td>{{ row["farmer"] }}</td>
+                    <td>{{ row["date_received"] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <h3>Crop Summary</h3>
+        <ul class="list-group">
+            {% for crop in crops %}
+            <li class="list-group-item">{{ crop["crop_name"] }}: {{ crop["total"] }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

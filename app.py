@@ -1,14 +1,26 @@
-from flask import Flask, render_template, request, redirect, session, jsonify
+from flask import Flask, render_template, request, redirect, session, jsonify, flash
+from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 import sqlite3
 import csv
 import os
+import logging
 from datetime import datetime
 
 app = Flask(__name__)
-app.secret_key = "agridirect_secret"
+app.secret_key = os.environ.get("SECRET_KEY", "agridirect_secret")
 
 UPLOAD_FOLDER = "uploads"
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
+
+API_KEY = os.environ.get("API_KEY", "mysecurekey123")
+
+# Ensure upload folder exists
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# Logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 
 def get_db():
@@ -24,7 +36,7 @@ def init_db():
     cur.execute("""
     CREATE TABLE IF NOT EXISTS users(
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT,
+        username TEXT UNIQUE,
         password TEXT
     )
     """)
@@ -38,6 +50,12 @@ def init_db():
         date_received TEXT
     )
     """)
+
+    # Insert default user if not exists
+    cur.execute("SELECT * FROM users WHERE username=?", ("admin",))
+    if not cur.fetchone():
+        cur.execute("INSERT INTO users(username,password) VALUES (?,?)",
+                    ("admin", generate_password_hash("admin")))
 
     conn.commit()
     conn.close()
@@ -63,14 +81,20 @@ def login():
         conn = get_db()
         cur = conn.cursor()
 
-        cur.execute("SELECT * FROM users WHERE username=? AND password=?",
-                    (username,password))
-
+        cur.execute("SELECT * FROM users WHERE username=?", (username,))
         user = cur.fetchone()
 
         if user:
-            session["user"] = username
-            return redirect("/dashboard")
+            if check_password_hash(user["password"], password):
+                session["user"] = username
+                logger.info(f"User {username} logged in")
+                return redirect("/dashboard")
+            else:
+                logger.warning(f"Invalid password for {username}")
+        else:
+            logger.warning(f"User {username} not found")
+
+        flash("Invalid username or password")
 
     return render_template("login.html")
 
@@ -83,18 +107,23 @@ def register():
     if request.method == "POST":
 
         username = request.form["username"]
-        password = request.form["password"]
+        password = generate_password_hash(request.form["password"])
 
         conn = get_db()
         cur = conn.cursor()
 
-        cur.execute("INSERT INTO users(username,password) VALUES (?,?)",
-                    (username,password))
-
-        conn.commit()
-        conn.close()
-
-        return redirect("/login")
+        try:
+            cur.execute("INSERT INTO users(username,password) VALUES (?,?)",
+                        (username,password))
+            conn.commit()
+            logger.info(f"User {username} registered")
+            flash("Registration successful! Please login.")
+            return redirect("/login")
+        except sqlite3.IntegrityError:
+            flash("Username already exists")
+            logger.warning(f"Registration failed: username {username} already exists")
+        finally:
+            conn.close()
 
     return render_template("register.html")
 
@@ -113,14 +142,17 @@ def dashboard():
     cur.execute("SELECT * FROM inventory")
     data = cur.fetchall()
 
-    cur.execute("SELECT SUM(quantity) FROM inventory")
-    total = cur.fetchone()[0]
+    cur.execute("""SELECT crop_name, SUM(quantity) as total FROM inventory GROUP BY crop_name""")
+    crops = cur.fetchall()
 
     conn.close()
 
+    total = sum(row['quantity'] for row in data)
+
     return render_template("dashboard.html",
-                           inventory=data,
-                           total=total)
+                       inventory=data,
+                       total=total,
+                       crops=crops)
 
 
 # ---------------- CSV UPLOAD ----------------
@@ -135,30 +167,52 @@ def upload():
 
         file = request.files["file"]
 
-        path = os.path.join(app.config["UPLOAD_FOLDER"], file.filename)
+        if file.filename == '':
+            flash("No file selected")
+            return redirect(request.url)
+
+        if not file.filename.endswith('.csv'):
+            flash("Only CSV files are allowed")
+            return redirect(request.url)
+
+        filename = secure_filename(file.filename)
+        path = os.path.join(app.config["UPLOAD_FOLDER"], filename)
         file.save(path)
 
-        with open(path) as csvfile:
+        try:
+            with open(path) as csvfile:
 
-            reader = csv.DictReader(csvfile)
+                reader = csv.DictReader(csvfile)
 
-            conn = get_db()
-            cur = conn.cursor()
+                conn = get_db()
+                cur = conn.cursor()
 
-            for row in reader:
+                for row in reader:
+                    try:
+                        crop = row["crop_name"]
+                        quantity = int(row["quantity"])
 
-                cur.execute("""
-                INSERT INTO inventory(crop_name,quantity,farmer,date_received)
-                VALUES(?,?,?,?)
-                """,(
-                    row["crop_name"],
-                    row["quantity"],
-                    session["user"],
-                    datetime.now()
-                ))
+                        if quantity <= 0:
+                            continue
 
-            conn.commit()
-            conn.close()
+                        cur.execute("""
+                        INSERT INTO inventory(crop_name,quantity,farmer,date_received)
+                        VALUES(?,?,?,?)
+                        """, (crop, quantity, session["user"], datetime.now()))
+
+                    except Exception as e:
+                        logger.error(f"Error processing row: {row}, {e}")
+                        flash(f"Error processing row: {row}")
+
+                conn.commit()
+                conn.close()
+
+            flash("Upload successful!")
+            logger.info(f"User {session['user']} uploaded {filename}")
+
+        except Exception as e:
+            flash(f"Error processing file: {str(e)}")
+            logger.error(f"Upload error: {str(e)}")
 
         return redirect("/dashboard")
 
@@ -170,25 +224,34 @@ def upload():
 @app.route("/api/harvest", methods=["POST"])
 def api_harvest():
 
+    key = request.headers.get("x-api-key")
+
+    if key != API_KEY:
+        return jsonify({"error": "Unauthorized"}), 403
+
     data = request.json
 
-    conn = get_db()
-    cur = conn.cursor()
+    try:
+        conn = get_db()
+        cur = conn.cursor()
 
-    cur.execute("""
-    INSERT INTO inventory(crop_name,quantity,farmer,date_received)
-    VALUES(?,?,?,?)
-    """,(
-        data["crop_name"],
-        data["quantity"],
-        data["farmer"],
-        datetime.now()
-    ))
+        cur.execute("""
+        INSERT INTO inventory(crop_name,quantity,farmer,date_received)
+        VALUES(?,?,?,?)
+        """, (
+            data["crop_name"],
+            int(data["quantity"]),
+            data.get("farmer", "API"),
+            datetime.now()
+        ))
 
-    conn.commit()
-    conn.close()
+        conn.commit()
+        conn.close()
 
-    return jsonify({"status":"harvest recorded"})
+        return jsonify({"status": "harvest recorded"})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 # ---------------- LOGOUT ----------------
@@ -198,6 +261,17 @@ def logout():
 
     session.pop("user",None)
     return redirect("/login")
+
+
+# ---------------- ERROR HANDLERS ----------------
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
+
+@app.errorhandler(500)
+def internal_error(e):
+    return render_template('500.html'), 500
 
 
 if __name__ == "__main__":
