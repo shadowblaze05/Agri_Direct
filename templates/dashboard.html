@@ -215,6 +215,7 @@
         <!-- Statistics Cards -->
         <div class="row mb-4">
             <div class="col-md-3">
+                <a href="/total-harvest" style="text-decoration: none; color: inherit;">
                 <div class="card stat-card">
                     <div class="card-body">
                         <h6 class="card-title">Total Harvest</h6>
@@ -222,8 +223,10 @@
                         <small>Units Received</small>
                     </div>
                 </div>
+                </a>
             </div>
             <div class="col-md-3">
+                <a href="/top-crop" style="text-decoration: none; color: inherit;">
                 <div class="card stat-card">
                     <div class="card-body">
                         <h6 class="card-title">Top Crop</h6>
@@ -235,8 +238,10 @@
                         </small>
                     </div>
                 </div>
+                </a>
             </div>
             <div class="col-md-3">
+                <a href="/crop-types" style="text-decoration: none; color: inherit;">
                 <div class="card stat-card">
                     <div class="card-body">
                         <h6 class="card-title">Crop Types</h6>
@@ -244,48 +249,21 @@
                         <small>Different Crops</small>
                     </div>
                 </div>
+                </a>
             </div>
             <div class="col-md-3">
+                <a href="/locations" style="text-decoration: none; color: inherit;">
                 <div class="card stat-card">
                     <div class="card-body">
-                        <h6 class="card-title">Entries</h6>
-                        <h3 id="entry-count">{{ inventory|length }}</h3>
-                        <small>Total Records</small>
+                        <h6 class="card-title">Location</h6>
+                        <h3 id="location-count">{{ locations|length }}</h3>
+                        <small>Crops Locations</small>
                     </div>
                 </div>
+                </a>
             </div>
         </div>
 
-        <!-- Real-Time Inventory Table -->
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="table-container">
-                    <div class="p-3 border-bottom">
-                        <h5 class="mb-0"><i class="fas fa-table"></i> Recent Inventory</h5>
-                    </div>
-                    <table class="table table-striped table-hover mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Crop Name</th>
-                                <th>Quantity</th>
-                                <th>Farmer</th>
-                                <th>Date Received</th>
-                            </tr>
-                        </thead>
-                        <tbody id="inventory-table">
-                            {% for row in inventory %}
-                            <tr>
-                                <td><strong>{{ row['crop_name'] }}</strong></td>
-                                <td><span class="badge bg-success">{{ row['quantity'] }}</span></td>
-                                <td>{{ row['farmer'] }}</td>
-                                <td title="{{ row['date_received'] }}">{{ row['date_received'][:19] }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
 
         <!-- Crop Summary -->
         <div class="row">
@@ -321,6 +299,38 @@
             </div>
         </div>
     </div>
+        
+        <!-- Real-Time Inventory Table -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="table-container">
+                    <div class="p-3 border-bottom">
+                        <h5 class="mb-0"><i class="fas fa-table"></i> Recent Inventory</h5>
+                    </div>
+                    <table class="table table-striped table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Farmer</th>
+                                <th>Crop Name</th>
+                                <th>Quantity</th>
+                                <th>Date Received</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-table">
+                            {% for row in inventory %}
+                            <tr>
+                                <td>{{ row['farmer'] }}</td>
+                                <td><strong>{{ row['crop_name'] }}</strong></td>
+                                <td><span class="badge bg-success">{{ row['quantity'] }}</span></td>
+                                <td title="{{ row['date_received'] }}">{{ row['date_received'][:19] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
 
     <!-- Chat Toggle Button -->
     <button class="chat-toggle" onclick="toggleChat()" title="Open Chat">

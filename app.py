@@ -525,6 +525,30 @@ def send_message():
 
 # ---------------- LOGOUT ----------------
 
+@app.route("/total-harvest")
+def total_harvest():
+    if "user" not in session:
+        return redirect(url_for("login"))
+    return render_template("total_harvest.html")
+
+@app.route("/top-crop")
+def top_crop():
+    if "user" not in session:
+        return redirect(url_for("login"))
+    return render_template("top_crop.html")
+
+@app.route("/crop-types")
+def crop_types():
+    if "user" not in session:
+        return redirect(url_for("login"))
+    return render_template("crop_types.html")
+
+@app.route("/locations")
+def locations():
+    if "user" not in session:
+        return redirect(url_for("login"))
+    return render_template("locations.html")
+
 @app.route("/logout")
 @app.route("/logout/")
 def logout():

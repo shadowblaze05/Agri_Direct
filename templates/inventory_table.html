@@ -2,9 +2,9 @@
     {% if inventory %}
         {% for row in inventory %}
             <tr>
-                <td>{{ row['crop_name'] }}</td>
+                <td><strong>{{ row['farmer'] }}</strong></td>
+                <td><strong>{{ row['crop_name'] }}</strong></td>
                 <td><span class="badge bg-success">{{ row['quantity'] }}</span></td>
-                <td>{{ row['farmer'] }}</td>
                 <td title="{{ row['date_received'] }}">{{ row['date_received'][:19] }}</td>
             </tr>
         {% endfor %}
