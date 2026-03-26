@@ -5,35 +5,163 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agri-Direct Register</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #2d5016 0%, #1a3408 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .register-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .register-header {
+            background: linear-gradient(135deg, #2d5016 0%, #1a3408 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .register-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .register-header p {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .register-body {
+            padding: 40px;
+        }
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            padding: 12px 15px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+        .form-control:focus {
+            border-color: #2d5016;
+            box-shadow: 0 0 0 0.2rem rgba(45, 80, 22, 0.25);
+        }
+        .btn-register {
+            background: linear-gradient(135deg, #2d5016 0%, #1a3408 100%);
+            border: none;
+            padding: 12px;
+            font-weight: 600;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+        .btn-register:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(45, 80, 22, 0.3);
+            color: white;
+        }
+        .form-group label {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .login-link {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+        .login-link a {
+            color: #2d5016;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .login-link a:hover {
+            text-decoration: underline;
+        }
+        .password-requirements {
+            background: #f8f9fa;
+            border-left: 4px solid #2d5016;
+            padding: 12px;
+            border-radius: 4px;
+            font-size: 13px;
+            margin-top: 15px;
+        }
+        .password-requirements h6 {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        .requirements-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .requirements-list li {
+            padding: 3px 0;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <h2 class="text-center">Create Farmer Account</h2>
-                {% with messages = get_flashed_messages() %}
-                    {% if messages %}
-                        <div class="alert alert-danger">
-                            {{ messages[0] }}
-                        </div>
-                    {% endif %}
-                {% endwith %}
-                <form method="POST" class="mt-4">
-                    <div class="mb-3">
-                        <input type="text" name="username" class="form-control" placeholder="Username" required>
+    <div class="register-container" style="max-width: 450px; width: 100%; margin: 20px;">
+        <!-- Header -->
+        <div class="register-header">
+            <h1><i class="fas fa-user-plus"></i> Create Account</h1>
+            <p>Join Agri-Direct Cooperative</p>
+        </div>
+
+        <!-- Body -->
+        <div class="register-body">
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle"></i> {{ messages[0] }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
-                    <div class="mb-3">
-                        <input type="password" name="password" class="form-control" placeholder="Password" required>
+                {% endif %}
+            {% endwith %}
+
+            <!-- Registration Form -->
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label"><i class="fas fa-user"></i> Username</label>
+                    <input type="text" name="username" class="form-control" placeholder="Choose a unique username" 
+                           required minlength="3" autofocus>
+                    <small class="text-muted">At least 3 characters, no spaces</small>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label"><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" name="password" class="form-control" placeholder="Create a strong password" 
+                           required minlength="6" id="password">
+                    
+                    <div class="password-requirements">
+                        <h6>Password Requirements:</h6>
+                        <ul class="requirements-list">
+                            <li>✓ At least 6 characters</li>
+                            <li>✓ Mix of letters and numbers</li>
+                            <li>✓ Try to include special characters</li>
+                        </ul>
                     </div>
-                    <button type="submit" class="btn btn-success w-100">Register</button>
-                </form>
-                <p class="text-center mt-3">
-                    <a href="/login">Already have an account? Login</a>
-                </p>
+                </div>
+
+                <button type="submit" class="btn btn-register w-100 text-white">
+                    <i class="fas fa-check"></i> Create Account
+                </button>
+            </form>
+
+            <!-- Login Link -->
+            <div class="login-link">
+                <p class="mb-0">Already have an account? <a href="/login">Login here</a></p>
             </div>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,0 +1,157 @@
+AGRI-DIRECT SYSTEM DOCUMENTATION
+================================
+
+OVERVIEW
+--------
+Agri-Direct is a web-based middleware system for agricultural supply chain management.
+It allows farmers to upload harvest data and buyers to view real-time inventory information.
+The system includes user authentication, data visualization, and real-time chat communication.
+
+SYSTEM ARCHITECTURE
+-------------------
+- Backend: Flask (Python web framework)
+- Database: SQLite3
+- Frontend: HTML5, CSS3, Bootstrap 5, JavaScript
+- Authentication: Session-based with JWT API support
+- Real-time Updates: AJAX polling
+
+CORE FEATURES
+-------------
+1. User Registration and Authentication
+2. CSV File Upload for Harvest Data
+3. Real-time Inventory Dashboard
+4. Data Visualization (Charts and Statistics)
+5. API Endpoints for External Integration
+6. Real-time Chat System (User-to-User Communication)
+7. Responsive Web Interface
+
+DATABASE SCHEMA
+---------------
+Tables:
+- users: id, username, password (hashed)
+- inventory: id, crop_name, quantity, farmer, date_received
+- messages: id, sender, recipient, message, timestamp
+
+FILE STRUCTURE
+--------------
+/app.py                 - Main Flask application
+/templates/
+  - index.html          - Home page
+  - login.html          - User login
+  - register.html       - User registration
+  - dashboard.html      - Main dashboard with sidebar and chat
+  - upload.html         - File upload interface
+  - inventory_table.html- Inventory table template
+  - 404.html            - 404 error page
+  - 500.html            - 500 error page
+/static/
+  - style.css           - Custom CSS styles
+/uploads/               - Directory for uploaded CSV files
+  - harvest.csv         - Sample harvest data
+  - harvest_-_Copy.csv  - Additional sample data
+  - sample_harvest.csv  - Sample data for testing
+
+API ENDPOINTS
+-------------
+Authentication:
+- POST /token           - Generate JWT token
+- POST /register        - User registration
+- POST /login           - User login
+- POST /logout          - User logout
+
+Data Management:
+- POST /upload          - Upload CSV harvest data
+- GET /dashboard        - Main dashboard
+- GET /dashboard-data   - Real-time inventory table (HTML)
+- GET /api/stats        - Inventory statistics (JSON)
+
+Chat System:
+- GET /api/messages     - Get chat messages (with optional recipient filter)
+- POST /api/messages    - Send chat message
+
+Harvest API:
+- POST /api/harvest     - Add harvest data via API (JWT required)
+
+DEPENDENCIES
+------------
+Python Packages:
+- Flask==2.3.0+
+- Werkzeug==2.3.0+
+- PyJWT==2.12.1+
+- sqlite3 (built-in)
+
+Front-end Libraries:
+- Bootstrap 5.3.0
+- Font Awesome 6.0.0
+- jQuery (via Bootstrap)
+
+INSTALLATION & SETUP
+--------------------
+1. Clone or download the project files
+2. Create virtual environment: python -m venv .venv
+3. Activate virtual environment: .venv\Scripts\activate (Windows)
+4. Install dependencies: pip install Flask PyJWT
+5. Run the application: python app.py
+6. Access at: http://127.0.0.1:5000
+
+Default Credentials:
+- Username: admin
+- Password: admin
+
+USAGE INSTRUCTIONS
+------------------
+1. Register a new account or login with existing credentials
+2. Upload harvest data using CSV files with columns: crop_name, quantity, farmer
+3. View real-time inventory dashboard with statistics and charts
+4. Use the sidebar navigation to access different features
+5. Click the chat button to communicate with other users
+6. Select recipient from dropdown to send private messages
+
+CHAT SYSTEM FEATURES
+--------------------
+- Real-time messaging with 3-second polling
+- User-to-user private communication
+- Message history (last 50 messages per conversation)
+- Responsive chat interface
+- Message timestamps
+- Sender identification
+
+SECURITY FEATURES
+-----------------
+- Password hashing with Werkzeug
+- Session-based authentication
+- JWT tokens for API access
+- CSRF protection on forms
+- Input validation and sanitization
+- Secure file upload handling
+
+DATA FLOW
+---------
+1. Farmers upload CSV files with harvest data
+2. Data is parsed and stored in SQLite database
+3. Dashboard displays real-time statistics and inventory
+4. Users can communicate via integrated chat system
+5. API endpoints allow external system integration
+
+MAINTENANCE
+-----------
+- Database: SQLite file (database.db) - backup regularly
+- Logs: Console output with timestamps
+- File uploads: Monitor /uploads directory size
+- Dependencies: Update packages regularly for security
+
+TROUBLESHOOTING
+---------------
+Common Issues:
+- Import errors: Ensure virtual environment is activated
+- Database errors: Delete database.db and restart (will recreate)
+- Upload failures: Check CSV format and file permissions
+- Chat not working: Check JavaScript console for errors
+
+SUPPORT
+-------
+For technical support or feature requests, refer to the codebase comments
+and error handling in app.py.
+
+VERSION: 1.0
+LAST UPDATED: March 26, 2026

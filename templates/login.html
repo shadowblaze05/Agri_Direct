@@ -5,35 +5,149 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agri-Direct Login</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #2d5016 0%, #1a3408 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .login-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        .login-header {
+            background: linear-gradient(135deg, #2d5016 0%, #1a3408 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .login-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .login-header p {
+            margin: 5px 0 0 0;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .login-body {
+            padding: 40px;
+        }
+        .form-control {
+            border: 2px solid #e9ecef;
+            border-radius: 6px;
+            padding: 12px 15px;
+            font-size: 15px;
+            transition: all 0.3s;
+        }
+        .form-control:focus {
+            border-color: #2d5016;
+            box-shadow: 0 0 0 0.2rem rgba(45, 80, 22, 0.25);
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #2d5016 0%, #1a3408 100%);
+            border: none;
+            padding: 12px;
+            font-weight: 600;
+            border-radius: 6px;
+            transition: all 0.3s;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(45, 80, 22, 0.3);
+            color: white;
+        }
+        .form-group label {
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        .register-link {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e9ecef;
+        }
+        .register-link a {
+            color: #2d5016;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+        .demo-info {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 20px;
+            font-size: 13px;
+        }
+        .demo-info strong {
+            display: block;
+            margin-bottom: 5px;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6">
-                <h2 class="text-center">Agri-Direct Login</h2>
-                {% with messages = get_flashed_messages() %}
-                    {% if messages %}
-                        <div class="alert alert-danger">
-                            {{ messages[0] }}
-                        </div>
-                    {% endif %}
-                {% endwith %}
-                <form method="POST" class="mt-4">
-                    <div class="mb-3">
-                        <input type="text" name="username" class="form-control" placeholder="Username" required>
+    <div class="login-container" style="max-width: 450px; width: 100%; margin: 20px;">
+        <!-- Header -->
+        <div class="login-header">
+            <h1><i class="fas fa-leaf"></i> Agri-Direct</h1>
+            <p>Agricultural Middleware System</p>
+        </div>
+
+        <!-- Body -->
+        <div class="login-body">
+            <!-- Demo Warning -->
+            <div class="demo-info">
+                <strong>Demo Credentials:</strong>
+                Username: <code>admin</code><br>
+                Password: <code>admin</code>
+            </div>
+
+            <!-- Flash Messages -->
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle"></i> {{ messages[0] }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
-                    <div class="mb-3">
-                        <input type="password" name="password" class="form-control" placeholder="Password" required>
-                    </div>
-                    <button type="submit" class="btn btn-success w-100">Login</button>
-                </form>
-                <p class="text-center mt-3">
-                    <a href="/register">Don't have an account? Register</a>
-                </p>
+                {% endif %}
+            {% endwith %}
+
+            <!-- Login Form -->
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label"><i class="fas fa-user"></i> Username</label>
+                    <input type="text" name="username" class="form-control" placeholder="Enter your username" required autofocus>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label"><i class="fas fa-lock"></i> Password</label>
+                    <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
+                </div>
+
+                <button type="submit" class="btn btn-login w-100 text-white">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+            </form>
+
+            <!-- Register Link -->
+            <div class="register-link">
+                <p class="mb-0">Don't have an account? <a href="/register">Create one</a></p>
             </div>
         </div>
     </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

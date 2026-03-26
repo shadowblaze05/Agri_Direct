@@ -1,0 +1,16 @@
+<tbody>
+    {% if inventory %}
+        {% for row in inventory %}
+            <tr>
+                <td>{{ row['crop_name'] }}</td>
+                <td><span class="badge bg-success">{{ row['quantity'] }}</span></td>
+                <td>{{ row['farmer'] }}</td>
+                <td title="{{ row['date_received'] }}">{{ row['date_received'][:19] }}</td>
+            </tr>
+        {% endfor %}
+    {% else %}
+        <tr>
+            <td colspan="4" class="text-center text-muted">No inventory data yet</td>
+        </tr>
+    {% endif %}
+</tbody>

@@ -5,44 +5,519 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agri-Direct Dashboard</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            background: linear-gradient(135deg, #2d5016 0%, #1a3408 100%);
+            color: #333;
+        }
+        .navbar-custom {
+            background: linear-gradient(135deg, #1a3408 0%, #0f1f03 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .sidebar {
+            background: #1a3408;
+            color: white;
+            min-height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 250px;
+            padding-top: 70px;
+            z-index: 1000;
+        }
+        .sidebar .nav-link {
+            color: rgba(255,255,255,0.8);
+            padding: 12px 20px;
+            margin: 5px 10px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        .sidebar .nav-link:hover {
+            color: white;
+            background: rgba(255,255,255,0.1);
+        }
+        .sidebar .nav-link.active {
+            background: #4caf50;
+            color: white;
+        }
+        .main-content {
+            margin-left: 250px;
+            padding-top: 20px;
+        }
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #4caf50 0%, #2d5016 100%);
+            color: white;
+        }
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .btn-primary {
+            background: #2d5016;
+            border: none;
+        }
+        .btn-primary:hover {
+            background: #1a3408;
+        }
+        .live-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #4caf50;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            margin-right: 5px;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .badge {
+            font-size: 0.9rem;
+        }
+        .dashboard-header {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        /* Chatbox Styles */
+        .chatbox {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 350px;
+            height: 500px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            display: none;
+            flex-direction: column;
+            z-index: 1050;
+        }
+        .chatbox-header {
+            background: #2d5016;
+            color: white;
+            padding: 15px;
+            border-radius: 10px 10px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chatbox-body {
+            flex: 1;
+            padding: 15px;
+            overflow-y: auto;
+            max-height: 400px;
+        }
+        .chatbox-footer {
+            padding: 15px;
+            border-top: 1px solid #eee;
+        }
+        .message {
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            border-radius: 18px;
+            max-width: 80%;
+        }
+        .message.sent {
+            background: #4caf50;
+            color: white;
+            margin-left: auto;
+            text-align: right;
+        }
+        .message.received {
+            background: #f1f1f1;
+            color: #333;
+        }
+        .chat-toggle {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: #4caf50;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 1049;
+        }
+        .chat-toggle:hover {
+            background: #2d5016;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h2 class="text-center">Cooperative Dashboard</h2>
-        <p class="text-center">Total Crops Received: {{ total }}</p>
-        <div class="d-flex justify-content-center mb-4">
-            <a href="/upload" class="btn btn-primary me-2">Upload Harvest</a>
-            <a href="/logout" class="btn btn-secondary">Logout</a>
-        </div>
-        <h3>Inventory</h3>
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Crop</th>
-                    <th>Quantity</th>
-                    <th>Farmer</th>
-                    <th>Date</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in inventory %}
-                <tr>
-                    <td>{{ row["crop_name"] }}</td>
-                    <td>{{ row["quantity"] }}</td>
-                    <td>{{ row["farmer"] }}</td>
-                    <td>{{ row["date_received"] }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-        <h3>Crop Summary</h3>
-        <ul class="list-group">
-            {% for crop in crops %}
-            <li class="list-group-item">{{ crop["crop_name"] }}: {{ crop["total"] }}</li>
-            {% endfor %}
-        </ul>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <nav class="nav flex-column">
+            <a class="nav-link active" href="/dashboard">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </a>
+            <a class="nav-link" href="/upload">
+                <i class="fas fa-upload"></i> Upload Harvest
+            </a>
+            <a class="nav-link" href="#" onclick="toggleChat()">
+                <i class="fas fa-comments"></i> Chat
+            </a>
+            <a class="nav-link" href="/logout">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </nav>
     </div>
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-dark navbar-custom fixed-top">
+        <div class="container-fluid">
+            <span class="navbar-brand mb-0 h1 ms-5">
+                <i class="fas fa-leaf"></i> Agri-Direct Middleware
+            </span>
+            <div>
+                <span class="text-white me-3">Welcome, <strong>{{ session.get('user', 'User') }}</strong></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container-fluid py-4">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h2><i class="fas fa-chart-line"></i> Real-Time Inventory Dashboard</h2>
+                        <p class="text-muted mb-0"><span class="live-indicator"></span>Live Updates (Every 2 seconds)</p>
+                    </div>
+                    <div class="col-auto">
+                        <a href="/upload" class="btn btn-primary">
+                            <i class="fas fa-upload"></i> Upload Harvest
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <h6 class="card-title">Total Harvest</h6>
+                        <h3 id="total-quantity">{{ total }}</h3>
+                        <small>Units Received</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <h6 class="card-title">Top Crop</h6>
+                        <h3 id="top-crop">
+                            {% if crops %}{{ crops[0]['crop_name'] }}{% else %}N/A{% endif %}
+                        </h3>
+                        <small id="top-crop-qty">
+                            {% if crops %}{{ crops[0]['total'] }} units{% else %}No data{% endif %}
+                        </small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <h6 class="card-title">Crop Types</h6>
+                        <h3 id="crops-count">{{ crops|length }}</h3>
+                        <small>Different Crops</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stat-card">
+                    <div class="card-body">
+                        <h6 class="card-title">Entries</h6>
+                        <h3 id="entry-count">{{ inventory|length }}</h3>
+                        <small>Total Records</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-Time Inventory Table -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="table-container">
+                    <div class="p-3 border-bottom">
+                        <h5 class="mb-0"><i class="fas fa-table"></i> Recent Inventory</h5>
+                    </div>
+                    <table class="table table-striped table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Crop Name</th>
+                                <th>Quantity</th>
+                                <th>Farmer</th>
+                                <th>Date Received</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-table">
+                            {% for row in inventory %}
+                            <tr>
+                                <td><strong>{{ row['crop_name'] }}</strong></td>
+                                <td><span class="badge bg-success">{{ row['quantity'] }}</span></td>
+                                <td>{{ row['farmer'] }}</td>
+                                <td title="{{ row['date_received'] }}">{{ row['date_received'][:19] }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Crop Summary -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-light border-0">
+                        <h5 class="mb-0"><i class="fas fa-seedling"></i> Crop Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="crop-summary">
+                            {% if crops %}
+                                <div class="row">
+                                    {% for crop in crops %}
+                                    <div class="col-md-4 mb-3">
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <strong>{{ crop['crop_name'] }}</strong>
+                                            <span class="badge bg-info">{{ crop['total'] }} units</span>
+                                        </div>
+                                        <div class="progress mt-2">
+                                            <div class="progress-bar bg-success" role="progressbar" 
+                                                 style="width: {{ (crop['total'] / (crops[0]['total'] or 1) * 100)|int }}%">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            {% else %}
+                                <p class="text-muted">No crop data available</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Toggle Button -->
+    <button class="chat-toggle" onclick="toggleChat()" title="Open Chat">
+        <i class="fas fa-comments"></i>
+    </button>
+
+    <!-- Chatbox -->
+    <div class="chatbox" id="chatbox">
+        <div class="chatbox-header">
+            <span><i class="fas fa-comments"></i> Chat</span>
+            <button class="btn btn-sm btn-outline-light" onclick="toggleChat()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="chatbox-body">
+            <div class="mb-3">
+                <label for="recipient-select" class="form-label text-white small">Select Recipient:</label>
+                <select class="form-select form-select-sm" id="recipient-select" onchange="loadMessages()">
+                    <option value="">Choose a user...</option>
+                </select>
+            </div>
+            <div class="chat-messages" id="chat-messages" style="height: 300px; overflow-y: auto;">
+                <!-- Messages will be loaded here -->
+                <div class="text-center text-muted small mt-3">
+                    <i class="fas fa-comments"></i><br>
+                    Select a recipient to start chatting
+                </div>
+            </div>
+        </div>
+        <div class="chatbox-footer">
+            <div class="input-group">
+                <input type="text" class="form-control" id="chat-input" placeholder="Type a message..." onkeypress="handleKeyPress(event)">
+                <button class="btn btn-primary" onclick="sendMessage()">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Real-time dashboard updates every 2 seconds
+        function updateDashboard() {
+            // Update inventory table
+            fetch('/dashboard-data')
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('inventory-table').innerHTML = html;
+                })
+                .catch(error => console.error('Error updating table:', error));
+
+            // Update statistics
+            fetch('/api/stats')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('total-quantity').textContent = data.total_quantity;
+                    document.getElementById('top-crop').textContent = data.top_crop;
+                    document.getElementById('top-crop-qty').textContent = data.crops.length > 0 ? 
+                        (data.crops[0].quantity + ' units') : 'No data';
+                    document.getElementById('crops-count').textContent = data.crops_count;
+                    document.getElementById('entry-count').textContent = data.entry_count;
+                })
+                .catch(error => console.error('Error updating stats:', error));
+        }
+
+        // Update dashboard every 2 seconds
+        setInterval(updateDashboard, 2000);
+
+        // Initial update on page load
+        document.addEventListener('DOMContentLoaded', updateDashboard);
+
+        // Chat functionality
+        let currentRecipient = '';
+
+        function toggleChat() {
+            const chatbox = document.getElementById('chatbox');
+            const toggleBtn = document.querySelector('.chat-toggle');
+            
+            if (chatbox.style.display === 'flex') {
+                chatbox.style.display = 'none';
+                toggleBtn.style.display = 'block';
+                currentRecipient = '';
+            } else {
+                chatbox.style.display = 'flex';
+                toggleBtn.style.display = 'none';
+                loadUsers();
+            }
+        }
+
+        function loadUsers() {
+            fetch('/api/users')
+                .then(response => response.json())
+                .then(users => {
+                    const select = document.getElementById('recipient-select');
+                    select.innerHTML = '<option value="">Choose a user...</option>';
+                    
+                    users.forEach(user => {
+                        const option = document.createElement('option');
+                        option.value = user;
+                        option.textContent = user;
+                        select.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error loading users:', error));
+        }
+
+        function loadMessages() {
+            const recipient = document.getElementById('recipient-select').value;
+            const chatMessages = document.getElementById('chat-messages');
+            
+            if (!recipient) {
+                chatMessages.innerHTML = `
+                    <div class="text-center text-muted small mt-3">
+                        <i class="fas fa-comments"></i><br>
+                        Select a recipient to start chatting
+                    </div>
+                `;
+                currentRecipient = '';
+                return;
+            }
+            
+            currentRecipient = recipient;
+            
+            fetch(`/api/messages?recipient=${encodeURIComponent(recipient)}`)
+                .then(response => response.json())
+                .then(messages => {
+                    chatMessages.innerHTML = '';
+                    
+                    if (messages.length === 0) {
+                        chatMessages.innerHTML = `
+                            <div class="text-center text-muted small mt-3">
+                                <i class="fas fa-comment-dots"></i><br>
+                                No messages yet. Start the conversation!
+                            </div>
+                        `;
+                    } else {
+                        messages.forEach(msg => {
+                            const messageDiv = document.createElement('div');
+                            messageDiv.className = `message ${msg.sender === '{{ session.get('user', 'User') }}' ? 'sent' : 'received'}`;
+                            messageDiv.innerHTML = `
+                                <strong>${msg.sender}:</strong> ${msg.message}
+                                <small class="text-muted d-block">${new Date(msg.timestamp).toLocaleTimeString()}</small>
+                            `;
+                            chatMessages.appendChild(messageDiv);
+                        });
+                        
+                        chatMessages.scrollTop = chatMessages.scrollHeight;
+                    }
+                })
+                .catch(error => console.error('Error loading messages:', error));
+        }
+
+        function sendMessage() {
+            if (!currentRecipient) {
+                alert('Please select a recipient first');
+                return;
+            }
+            
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            
+            if (!message) return;
+            
+            fetch('/api/messages', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    message: message,
+                    recipient: currentRecipient
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    input.value = '';
+                    loadMessages();
+                } else {
+                    alert('Error sending message: ' + (data.error || 'Unknown error'));
+                }
+            })
+            .catch(error => console.error('Error sending message:', error));
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+
+        // Load messages periodically when chat is open and recipient is selected
+        setInterval(() => {
+            if (document.getElementById('chatbox').style.display === 'flex' && currentRecipient) {
+                loadMessages();
+            }
+        }, 3000);
+    </script>
 </body>
 </html>
